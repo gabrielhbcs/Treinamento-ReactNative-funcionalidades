@@ -15,12 +15,24 @@ class VibrateScreen extends Component{
     apertando: false,
   }
 
+  initVar(){
+    this.state.pattern = [];
+    this.state.countMs = 0;
+    this.state.gravVibracao = false;
+    this.state.gravStatic = false;
+  }
+
   gravVib(){
+    if(!this.state.gravando){
+      this.initVar();
+      this.state.gravando = true;
+    }
     if(!this.apertando){
       this.comecaTimer();
     }
     Vibration.vibrate([0,1000], true);
     this.state.apertando = true;
+    
   }
 
   gravSta(){
@@ -35,65 +47,57 @@ class VibrateScreen extends Component{
     if(this._gravacao){
       clearTimeout(this._gravacao);
     }
-    this.state.pattern.push(this.state.countMs);
+    this.state.pattern.push(this.state.countMs*20);
     this.state.countMs = 0;
     this._gravacao = setInterval(() => 
       {        
-        this.setState({ countMs: this.state.countMs + 20 });
-     }, 20);
+        this.state.countMs ++;
+     }, 1);
     
   }
 
-  cancelaGravacao(){
+  cancelaGravacao(com = true){
     clearTimeout(this._gravacao);
-    //this.state.countMs = 0;    
-    this.setState({countMs: 0});
-    alert(JSON.stringify(this.state.pattern));
+    this.state.gravando = false;
+    if(com) { alert(JSON.stringify(this.state.pattern)); }
+    
   }
-
-  limpaPattern(){
-    this.setState({pattern: [], countMs: 0});
-  }
-
 
   render(){
     return(
       <View style={{flex: 1}}>
-        <View style={{flex: 4, justifyContent: "center", alignItems: "center", backgroundColor: 'black'}}>
-          <TouchableOpacity style={{marginHorizontal: 5}} onPress = {() => Vibration.vibrate(200)}>
+        <View style={{flex: 4, justifyContent: "center", alignItems: "center",}}>
+          <TouchableOpacity style={styles.vibrateScreenImages} onPress = {() => Vibration.vibrate(200)}>
             <Image source = {require('./images/celular/celular.png')} />
           </TouchableOpacity>
           <View style = {{flexDirection: 'row'}}>
-            <TouchableOpacity style={{marginHorizontal: 5}} onPressIn = {() => Vibration.vibrate([0, 10000], true)} onPressOut = {() => Vibration.cancel()}>
+            <TouchableOpacity style={styles.vibrateScreenImages} onPressIn = {() => Vibration.vibrate([0, 10000], true)} onPressOut = {() => Vibration.cancel()}>
               <Image source = {require('./images/celular/vibrafull.png')} />
             </TouchableOpacity>
-            <TouchableOpacity style={{marginHorizontal: 5}} onPressIn = {() => Vibration.vibrate(200)}>
+            <TouchableOpacity style={styles.vibrateScreenImages} onPressIn = {() => Vibration.vibrate(200)}>
               <Image source = {require('./images/celular/in.png')} />
             </TouchableOpacity>
           </View>
           <View style = {{flexDirection: 'row'}}>
-            <TouchableOpacity style={{marginHorizontal: 5}} onPressIn = {() => Vibration.vibrate(this.state.pattern)}>
+            <TouchableOpacity style={styles.vibrateScreenImages} onPressIn = {() => Vibration.vibrate(this.state.pattern) & this.cancelaGravacao(false)}>
               <Image source = {require('./images/celular/pat.png')} />
             </TouchableOpacity>
-            <TouchableOpacity style={{marginHorizontal: 5}} onPressIn = {() => Vibration.cancel()}>
+            <TouchableOpacity style={styles.vibrateScreenImages} onPressIn = {() => Vibration.cancel()}>
               <Image source = {require('./images/celular/parapat.png')} />
             </TouchableOpacity>
           </View>
         </View>
         
-        <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'black', alignItems: "center", justifyContent: "center"}}>
-          <TouchableOpacity onPressIn={() => this.gravVib()} onPressOut = {() => this.gravSta()}> 
+        <View style={{flex: 1, flexDirection: 'row', alignItems: "center", justifyContent: "center"}}>
+          <TouchableOpacity style={styles.vibrateScreenImages} onPressIn={() => this.gravVib()} onPressOut = {() => this.gravSta()}> 
             <Image source = {require('./images/celular/rec.png')} />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginHorizontal: 10}} onPress = {() => this.cancelaGravacao}>
+          <TouchableOpacity style={styles.vibrateScreenImages} onPress = {() => this.cancelaGravacao()}>
             <Image source = {require('./images/celular/stop.png')} />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginHorizontal: 10}} onPress = {() => this.limpaPattern()}>
+          <TouchableOpacity style={styles.vibrateScreenImages} onPress = {() => this.initVar()}>
             <Image source = {require('./images/celular/clean.png')} />
           </TouchableOpacity>
-          {/* <Button title = 'Start' onPressIn = {() => this.gravVib()} onPressOut = {() => this.gravSta()} />
-          <Button title = 'Check' onPress = {() => this.cancelaGravacao()} />
-          <Button title = 'Clear' onPress = {() => this.state.pattern = []}/> */}
         </View>
       </View>
     );
@@ -136,6 +140,15 @@ class HomeScreen extends Component{
   }
 
 }
+
+const styles = StyleSheet.create({
+  vibrateScreenImages:{
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: 'black',
+  }
+});
 
 const AppStack = createStackNavigator({
   Home: {
